@@ -1,0 +1,26 @@
+{
+  "name": "PMI-CPMAI™ Prep Hub — Portal Oficial de Estudos & Simulados",
+  "short_name": "PMI-CPMAI Prep",
+  "description": "Plataforma completa de preparação para a certificação de Inteligência Artificial do PMI (PMI-CPMAI™): Guia de Referência, Cronograma 8 Semanas, 6 Simulados de Prova e Simulados por Domínio.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='38' fill='%234f46e5'/><text x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='68' fill='white'>AI</text><text x='50%25' y='82%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='26' fill='%23a5b4fc'>CPMAI</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%234f46e5'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='180' fill='white'>AI</text><text x='50%25' y='80%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='72' fill='%23a5b4fc'>CPMAI</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

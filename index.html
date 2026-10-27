@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Opt into OS-level dynamic type and accessibility text scaling (Modern Web Guidance) -->
+  <meta name="text-scale" content="scale" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="description" content="Portal Completo de Estudos e Simulados para a Certificação de Inteligência Artificial do PMI (PMI-CPMAI™). Inclui Guia de Referência, Cronograma de 8 Semanas, 6 Simulados no Formato da Prova e Simulados por Domínio." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PMI-CPMAI Prep" />
+  <title>PMI-CPMAI™ Prep Hub — Portal Oficial de Estudos, Cronograma &amp; Simulados</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><text x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='44' fill='white'>AI</text></svg>" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
+  <div class="app-shell">
+    <!-- ====================================================================
+         TOP HEADER (Sticky Desktop + Mobile Header)
+         ==================================================================== -->
+    <header class="top-header" role="banner">
+      <div class="topbar-inner">
+        <a href="#overview" class="brand" data-nav-target="overview" aria-label="PMI-CPMAI Prep Hub - Ir para o Início">
+          <span class="brand-icon" aria-hidden="true">AI</span>
+          <span class="brand-text">
+            <span class="brand-title">PMI-CPMAI™ Prep Hub</span>
+            <span class="brand-subtitle">Certified Professional in Managing AI</span>
+          </span>
+        </a>
+
+        <!-- Navegação Principal Desktop -->
+        <nav class="desktop-nav" aria-label="Navegação Principal">
+          <button type="button" class="nav-btn active" data-nav-target="overview" aria-selected="true">
+            <span aria-hidden="true">🏛️</span> Prova &amp; Time
+          </button>
+          <button type="button" class="nav-btn" data-nav-target="reference" aria-selected="false">
+            <span aria-hidden="true">📚</span> Referência ("PMBOK IA")
+          </button>
+          <button type="button" class="nav-btn" data-nav-target="schedule" aria-selected="false">
+            <span aria-hidden="true">📅</span> Cronograma (8 Semanas)
+          </button>
+          <button type="button" class="nav-btn" data-nav-target="simulados" aria-selected="false">
+            <span aria-hidden="true">📝</span> Simulados (<span id="nav-simulados-badge">13</span>)
+          </button>
+          <button type="button" class="nav-btn" data-nav-target="tips" aria-selected="false">
+            <span aria-hidden="true">🚀</span> Dicas &amp; GitHub
+          </button>
+        </nav>
+
+        <!-- Ações Rápidas & Progresso Global -->
+        <div class="header-actions">
+          <div class="global-progress-pill" title="Progresso Geral do Plano de Estudos">
+            <span id="global-progress-text">0%</span>
+            <div class="mini-progress-bar" aria-hidden="true">
+              <div id="global-progress-fill" class="mini-progress-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <button type="button" id="btn-open-sync" class="icon-btn" title="Sincronizar / Backup do Progresso (Celular &amp; PC)" aria-label="Sincronizar ou fazer backup do progresso">
+            <span aria-hidden="true">💾</span>
+          </button>
+
+          <button type="button" id="theme-toggle" class="theme-toggle" title="Alternar Tema Escuro / Claro" aria-label="Alternar tema visual">
+            <span id="theme-icon" aria-hidden="true">☀️</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="top-progress-line" aria-hidden="true">
+        <div id="top-progress-line-fill" class="top-progress-line-fill" style="width: 0%;"></div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         MAIN CONTENT (5 Views SPA)
+         ==================================================================== -->
+    <main id="main-content" class="main-container" role="main">
+
+      <!-- ==================================================================
+           VIEW 1: PROVA, O QUE É AVALIADO & DISCUSSÃO DO TIME
+           ================================================================== -->
+      <section id="view-overview" class="tab-section active" data-view-panel="overview" aria-labelledby="heading-overview">
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+          <div class="hero-content">
+            <div class="hero-badges">
+              <span class="badge badge-brand">Certificação Oficial de IA do PMI®</span>
+              <span class="badge badge-success">Metodologia CPMAI™ v7 + ECO</span>
+              <span class="badge badge-info">100% Mobile-First &amp; GitHub Pages Ready</span>
+            </div>
+            <h1 id="heading-overview" class="hero-title">
+              Preparação Completa para a Certificação <span style="color: var(--brand-primary-hover);">PMI-CPMAI™</span>
+            </h1>
+            <p class="hero-lead">
+              Domine a gestão de projetos de Inteligência Artificial, Machine Learning e IA Generativa do alinhamento de negócios à operacionalização em produção. Estude pelo guia completo de referência, acompanhe seu cronograma de 8 semanas e treine com <strong>6 Simulados no Formato da Prova</strong> + <strong>Simulados Dirigidos por Domínio do Conhecimento</strong>.
+            </p>
+            <div class="hero-actions">
+              <button type="button" class="btn btn-primary btn-lg" data-nav-target="simulados">
+                🎯 Ir para a Central de Simulados
+              </button>
+              <button type="button" class="btn btn-secondary btn-lg" data-nav-target="reference">
+                📚 Ler o "PMBOK da IA" (Guia CPMAI)
+              </button>
+              <button type="button" class="btn btn-outline btn-lg" data-nav-target="schedule">
+                📅 Ver Cronograma de 8 Semanas
+              </button>
+            </div>
+          </div>
+
+          <!-- Estatísticas Rápidas da Prova e do Seu Progresso -->
+          <div class="hero-stats" id="hero-stats-grid">
+            <div class="stat-card">
+              <span class="stat-value">120</span>
+              <span class="stat-label">Questões na Prova</span>
+              <span class="stat-sub">100 pontuadas + 20 pré-teste</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">160 min</span>
+              <span class="stat-label">Duração do Exame</span>
+              <span class="stat-sub">~1m20s por questão (sem pausa)</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">5 Domínios</span>
+              <span class="stat-label">Estrutura do ECO</span>
+              <span class="stat-sub">+ 6 Fases Iterativas CPMAI</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-questions-count">210</span>
+              <span class="stat-label">Questões Inéditas</span>
+              <span class="stat-sub">6 Simulados Prova + 6 Domínios</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-user-score">--%</span>
+              <span class="stat-label">Sua Média Geral</span>
+              <span class="stat-sub" id="stat-exams-done">0 simulados concluídos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-navegação rápida da seção -->
+        <div class="subnav-tabs" role="navigation" aria-label="Atalhos da seção Sobre a Prova">
+          <a href="#sec-exam-blueprint" class="filter-btn active">🎯 Como é a Prova &amp; ECO</a>
+          <a href="#sec-domains-detail" class="filter-btn">📊 Os 5 Domínios Avaliados</a>
+          <a href="#sec-team-roundtable" class="filter-btn">👥 Discussão do Time do Projeto</a>
+        </div>
+
+        <!-- Raio-X da Prova: Como funciona o Exame PMI-CPMAI -->
+        <div id="sec-exam-blueprint" class="section-container mb-6">
+          <div class="section-header">
+            <span class="section-eyebrow">Raio-X Oficial do Exame</span>
+            <h2 class="section-title">Como é a Prova PMI-CPMAI™ e O Que Vai Ser Avaliado?</h2>
+            <p class="section-subtitle">
+              Entenda todas as regras, formato de aplicação, pontuação e estilo de cobrança da certificação oficial de Inteligência Artificial do Project Management Institute (PMI).
+            </p>
+          </div>
+
+          <div id="exam-overview-container">
+            <!-- Preenchido dinamicamente por app.js a partir de window.STUDY_CONTENT.examOverview -->
+          </div>
+        </div>
+
+        <!-- Os 5 Domínios do Exame (ECO) -->
+        <div id="sec-domains-detail" class="section-container mb-6">
+          <div class="section-header">
+            <span class="section-eyebrow">PMI-CPMAI Examination Content Outline (ECO)</span>
+            <h2 class="section-title">Os 5 Domínios do Conhecimento e Seus Pesos na Prova</h2>
+            <p class="section-subtitle">
+              Mais da metade da prova (52%) avalia suas decisões de Negócio e Dados antes mesmo de construir qualquer modelo de Machine Learning.
+            </p>
+          </div>
+
+          <div id="eco-domains-container">
+            <!-- Preenchido dinamicamente por app.js -->
+          </div>
+        </div>
+
+        <!-- Mesa-Redonda do Time (Discussão entre Especialista IA, UX Designer, Eng. Software e QA) -->
+        <div id="sec-team-roundtable" class="section-container mb-6">
+          <div class="section-header">
+            <span class="section-eyebrow">Bastidores &amp; Arquitetura Pedagógica</span>
+            <h2 class="section-title">Mesa-Redonda do Time de Desenvolvimento</h2>
+            <p class="section-subtitle">
+              Veja como nosso Especialista em IA, Designer UI/UX, Engenheiro de Software e QA discutiram e desenharam este portal para maximizar sua aprovação estudando no celular ou no computador.
+            </p>
+          </div>
+
+          <div id="team-discussion-container">
+            <!-- Preenchido dinamicamente por app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           VIEW 2: MATERIAL DE REFERÊNCIA ("O PMBOK DA IA"), CONCEITOS & VÍDEOS
+           ================================================================== -->
+      <section id="view-reference" class="tab-section" data-view-panel="reference" aria-labelledby="heading-reference">
+        <div class="section-header">
+          <span class="section-eyebrow">Base Teórica Completa &amp; Curadoria Web</span>
+          <h2 id="heading-reference" class="section-title">Material de Referência: O "PMBOK da IA", Conceitos &amp; Vídeos</h2>
+          <p class="section-subtitle">
+            Existe um PMBOK para a certificação de IA do PMI? Entenda os guias oficiais que regem a prova e estude os conceitos fundamentais das 6 Fases CPMAI, 7 Padrões de IA, Ciência de Dados para Gestores, Governança, Flashcards, Glossário e Vídeos.
+          </p>
+        </div>
+
+        <!-- Sub-abas da Biblioteca de Referência -->
+        <div class="subnav-tabs" id="reference-subtabs" role="tablist" aria-label="Módulos do Material de Referência">
+          <button type="button" class="subtab-btn active" data-ref-tab="pmbok-ia" role="tab" aria-selected="true">
+            📖 O "PMBOK da IA" &amp; 6 Fases CPMAI
+          </button>
+          <button type="button" class="subtab-btn" data-ref-tab="patterns" role="tab" aria-selected="false">
+            🧩 Os 7 Padrões de IA
+          </button>
+          <button type="button" class="subtab-btn" data-ref-tab="tech-concepts" role="tab" aria-selected="false">
+            🧠 Conceitos Técnicos, Métricas &amp; GenAI
+          </button>
+          <button type="button" class="subtab-btn" data-ref-tab="flashcards" role="tab" aria-selected="false">
+            🃏 Flashcards 3D (<span id="flashcards-count-badge">24</span>)
+          </button>
+          <button type="button" class="subtab-btn" data-ref-tab="glossary" role="tab" aria-selected="false">
+            🔤 Glossário Oficial
+          </button>
+          <button type="button" class="subtab-btn" data-ref-tab="videos" role="tab" aria-selected="false">
+            🎬 Vídeos, Cursos &amp; Sites na Web
+          </button>
+        </div>
+
+        <!-- Container Dinâmico das Sub-abas de Referência -->
+        <div id="reference-content-container" class="reference-container">
+          <!-- Renderizado por app.js -->
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           VIEW 3: CRONOGRAMA DETALHADO SEMANA A SEMANA (8 SEMANAS)
+           ================================================================== -->
+      <section id="view-schedule" class="tab-section" data-view-panel="schedule" aria-labelledby="heading-schedule">
+        <div class="section-header">
+          <span class="section-eyebrow">Plano de Ação Estruturado</span>
+          <h2 id="heading-schedule" class="section-title">Cronograma Detalhado de Estudos Semana a Semana (8 Semanas)</h2>
+          <p class="section-subtitle">
+            Plano passo a passo do zero até o dia do exame. Marque cada atividade concluída — seu progresso fica salvo automaticamente no seu navegador ou celular.
+          </p>
+        </div>
+
+        <!-- Resumo de Progresso do Cronograma -->
+        <div class="schedule-summary-card">
+          <div class="schedule-progress-header">
+            <div>
+              <h3 class="card-title" id="schedule-progress-title">Seu Progresso no Cronograma: 0% concluído</h3>
+              <p class="stat-sub" id="schedule-progress-subtitle">0 de 0 atividades concluídas nas 8 semanas</p>
+            </div>
+            <div class="hero-actions" style="margin-top: 0;">
+              <button type="button" id="btn-mark-current-week" class="btn btn-secondary btn-sm">
+                ✓ Marcar Semana Visível
+              </button>
+              <button type="button" id="btn-reset-schedule" class="btn btn-outline btn-sm">
+                ↺ Reiniciar Checklist
+              </button>
+            </div>
+          </div>
+          <div class="progress-bar-lg" aria-hidden="true">
+            <div id="schedule-progress-bar" class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Filtro por Semana -->
+        <div class="week-filters" id="schedule-week-filters" role="tablist" aria-label="Filtrar por semana">
+          <!-- Botões Todas, Semana 1..8 gerados via app.js -->
+        </div>
+
+        <!-- Grid das Semanas -->
+        <div id="schedule-weeks-container" class="schedule-container">
+          <!-- Renderizado por app.js -->
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           VIEW 4: CENTRAL DE SIMULADOS (6 FORMATO PROVA + DIRIGIDOS POR DOMÍNIO)
+           ================================================================== -->
+      <section id="view-simulados" class="tab-section" data-view-panel="simulados" aria-labelledby="heading-simulados">
+        <!-- Visão do Catálogo de Simulados -->
+        <div id="simulados-catalog-view">
+          <div class="section-header">
+            <span class="section-eyebrow">Treinamento Intensivo &amp; Diagnóstico por Domínio</span>
+            <h2 id="heading-simulados" class="section-title">Central de Simulados PMI-CPMAI™</h2>
+            <p class="section-subtitle">
+              Treine com <strong>6 Simulados Completos no Formato da Prova</strong> (balanceados conforme os pesos do ECO), o <strong>Super Simulado Oficial Completo (120 Questões / 160 Minutos)</strong> e <strong>6 Simulados Dirigidos por Domínio do Conhecimento</strong>.
+            </p>
+          </div>
+
+          <!-- Seletor de Modo de Execução -->
+          <div class="mode-selector" role="radiogroup" aria-label="Escolha o Modo do Simulado">
+            <button type="button" class="mode-card active" data-exam-mode="tutor" aria-pressed="true">
+              <span class="callout-icon" aria-hidden="true">🎓</span>
+              <div>
+                <strong>Modo Estudo / Tutor Comentado (Recomendado para Aprender)</strong>
+                <p style="font-size: 0.85rem; margin-top: 0.25rem;">
+                  Revele o gabarito imediatamente após cada resposta, leia a análise detalhada de cada alternativa e veja a Dica de Prova PMI-CPMAI.
+                </p>
+              </div>
+            </button>
+            <button type="button" class="mode-card" data-exam-mode="exam" aria-pressed="false">
+              <span class="callout-icon" aria-hidden="true">⏱️</span>
+              <div>
+                <strong>Modo Prova Real Pearson VUE (Com Cronômetro)</strong>
+                <p style="font-size: 0.85rem; margin-top: 0.25rem;">
+                  Simulação fiel sem mostrar respostas durante o teste, cronômetro regressivo ativo, marcação de questões para revisão e relatório final por domínio.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Filtros de Categoria de Simulado -->
+          <div class="category-filters" id="exam-category-filters" role="tablist" aria-label="Categorias de Simulados">
+            <button type="button" class="filter-btn active" data-exam-filter="all">
+              📋 Todos os Simulados (<span id="count-all-exams">13</span>)
+            </button>
+            <button type="button" class="filter-btn" data-exam-filter="full">
+              🏆 6 Simulados no Formato da Prova + Super Exame 120Q
+            </button>
+            <button type="button" class="filter-btn" data-exam-filter="domain">
+              🎯 Simulados Dirigidos por Domínio (ECO I a V + Fases CPMAI)
+            </button>
+            <button type="button" class="filter-btn" data-exam-filter="mistakes">
+              📓 Caderno de Erros (<span id="count-mistakes-badge">0</span> questões)
+            </button>
+            <button type="button" class="filter-btn" data-exam-filter="history">
+              📈 Histórico &amp; Desempenho por Domínio
+            </button>
+          </div>
+
+          <!-- Container dos Cards de Simulados / Histórico / Caderno de Erros -->
+          <div id="exams-catalog-container" class="simulado-container">
+            <!-- Renderizado por app.js -->
+          </div>
+        </div>
+
+        <!-- Visão Ativa do Simulado (Exam Runner - oculta até iniciar um simulado) -->
+        <div id="simulados-runner-view" class="hidden">
+          <!-- Renderizado dinamicamente por app.js durante a execução de um simulado -->
+        </div>
+
+        <!-- Visão de Resultado Final do Simulado (oculta até finalizar um simulado) -->
+        <div id="simulados-results-view" class="hidden">
+          <!-- Renderizado dinamicamente por app.js ao concluir um simulado -->
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           VIEW 5: DICAS DE PROVA, MINDSET PMI-CPMAI & DEPLOY NO GITHUB
+           ================================================================== -->
+      <section id="view-tips" class="tab-section" data-view-panel="tips" aria-labelledby="heading-tips">
+        <div class="section-header">
+          <span class="section-eyebrow">Estratégia de Aprovação &amp; Publicação Web</span>
+          <h2 id="heading-tips" class="section-title">Dicas de Ouro da Prova ("Mindset PMI-CPMAI") &amp; Guia GitHub Pages</h2>
+          <p class="section-subtitle">
+            Aprenda os atalhos mentais para desarmar as pegadinhas da prova situacional e veja o passo a passo completo para publicar este portal no seu GitHub e acessá-lo de qualquer celular.
+          </p>
+        </div>
+
+        <div class="subnav-tabs" id="tips-subtabs" role="tablist" aria-label="Seções de Dicas e GitHub">
+          <button type="button" class="subtab-btn active" data-tips-tab="mindset" role="tab" aria-selected="true">
+            💡 Mindset PMI-CPMAI &amp; Dicas de Prova
+          </button>
+          <button type="button" class="subtab-btn" data-tips-tab="github" role="tab" aria-selected="true">
+            🐙 Como Subir no Seu GitHub (GitHub Pages + App Mobile)
+          </button>
+        </div>
+
+        <div id="tips-content-container" class="section-container">
+          <!-- Renderizado por app.js -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         MOBILE BOTTOM NAVIGATION BAR (Fixa no Rodapé para Celulares)
+         ==================================================================== -->
+    <nav class="bottom-nav" aria-label="Navegação Mobile">
+      <button type="button" class="bottom-nav-item active" data-nav-target="overview" aria-selected="true">
+        <span class="nav-icon" aria-hidden="true">🏛️</span>
+        <span>Prova</span>
+      </button>
+      <button type="button" class="bottom-nav-item" data-nav-target="reference" aria-selected="false">
+        <span class="nav-icon" aria-hidden="true">📚</span>
+        <span>Referência</span>
+      </button>
+      <button type="button" class="bottom-nav-item" data-nav-target="schedule" aria-selected="false">
+        <span class="nav-icon" aria-hidden="true">📅</span>
+        <span>Cronograma</span>
+      </button>
+      <button type="button" class="bottom-nav-item" data-nav-target="simulados" aria-selected="false">
+        <span class="nav-icon" aria-hidden="true">📝</span>
+        <span>Simulados</span>
+      </button>
+      <button type="button" class="bottom-nav-item" data-nav-target="tips" aria-selected="false">
+        <span class="nav-icon" aria-hidden="true">🚀</span>
+        <span>Dicas/Git</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ======================================================================
+       MODAL DE BACKUP / SINCRONIZAÇÃO MULTI-DISPOSITIVO (<dialog>)
+       ====================================================================== -->
+  <dialog id="sync-dialog" aria-labelledby="sync-dialog-title">
+    <div class="flex-between mb-4">
+      <h3 id="sync-dialog-title" class="card-title">💾 Sincronizar Progresso (Celular &amp; Computador)</h3>
+      <button type="button" id="btn-close-sync" class="icon-btn" aria-label="Fechar janela">✕</button>
+    </div>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+      Seu progresso (cronograma de 8 semanas, histórico de notas dos simulados e caderno de erros) é salvo automaticamente neste navegador. Use as opções abaixo para transferir seus dados entre seu computador e seu celular:
+    </p>
+    <div class="grid-2 mb-4">
+      <div class="card" style="padding: 1rem;">
+        <h4>📤 Exportar Progresso</h4>
+        <p style="font-size: 0.825rem; margin-block: 0.5rem 1rem;">
+          Baixe um arquivo <code>.json</code> com todo o seu histórico de estudos para importar em outro dispositivo.
+        </p>
+        <button type="button" id="btn-export-json" class="btn btn-primary btn-sm" style="width: 100%;">
+          Baixar Backup (.json)
+        </button>
+      </div>
+      <div class="card" style="padding: 1rem;">
+        <h4>📥 Importar Progresso</h4>
+        <p style="font-size: 0.825rem; margin-block: 0.5rem 1rem;">
+          Carregue um arquivo <code>.json</code> exportado anteriormente para restaurar seu progresso.
+        </p>
+        <label for="input-import-json" class="btn btn-secondary btn-sm" style="width: 100%; cursor: pointer;">
+          Selecionar Arquivo (.json)
+        </label>
+        <input type="file" id="input-import-json" accept="application/json" class="sr-only" />
+      </div>
+    </div>
+    <div class="flex-between" style="border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+      <button type="button" id="btn-clear-all-data" class="btn btn-danger btn-sm">
+        🗑️ Apagar Todos os Dados Locais
+      </button>
+      <button type="button" id="btn-close-sync-footer" class="btn btn-outline btn-sm">
+        Fechar
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Container de Notificações Rápidas (Toasts) -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts de Dados e Motor da Aplicação -->
+  <script src="./js/data-content.js"></script>
+  <script src="./js/data-exams-full-1.js"></script>
+  <script src="./js/data-exams-full-2.js"></script>
+  <script src="./js/data-exams-domains.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
