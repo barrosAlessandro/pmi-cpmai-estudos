@@ -2,23 +2,11 @@
  * ============================================================================
  * PMI-CPMAI™ PREP HUB — INTERACTIVE APPLICATION ENGINE (js/app.js)
  * ============================================================================
- * Recursos:
- * - Navegação SPA Mobile-First (Top Nav + Bottom Bar + Hash Routing)
- * - Persistência Completa em localStorage + Backup/Restore JSON Multi-Dispositivo
- * - Renderização Dinâmica do Raio-X da Prova, 5 Domínios do ECO e Mesa-Redonda do Time
- * - Biblioteca de Referência ("O PMBOK da IA", 6 Fases CPMAI, 7 Padrões, Guia Técnico,
- *   Flashcards 3D com Flip, Glossário em Tempo Real e Curadoria de Vídeos/Web)
- * - Cronograma Interativo de 8 Semanas com Checklist e Progresso Global
- * - Motor de Simulados: 6 Simulados no Formato da Prova + Super Simulado Oficial 120Q
- *   + 6 Simulados Dirigidos por Domínio + Caderno de Erros + Histórico por Domínio
- * - Dois Modos de Simulado: Modo Tutor Comentado e Modo Prova Real (Timer + Revisão)
- * ============================================================================
  */
 
 (function () {
   'use strict';
 
-  // Chaves de Persistência Local
   const STORAGE_KEYS = {
     THEME: 'pmi_cpmai_theme_v1',
     TASKS: 'pmi_cpmai_tasks_v1',
@@ -27,26 +15,22 @@
     EXAM_MODE: 'pmi_cpmai_exam_mode_v1'
   };
 
-  // Estado Global da Aplicação
   const state = {
     currentView: 'overview',
     currentRefTab: 'pmbok-ia',
     currentTipsTab: 'mindset',
     selectedWeekFilter: 'all',
-    selectedCpmaiPhase: 1,
     flashcardCategory: 'all',
     glossaryQuery: '',
-    glossaryDomain: 'all',
-    examMode: localStorage.getItem(STORAGE_KEYS.EXAM_MODE) || 'tutor', // 'tutor' | 'exam'
-    examFilter: 'all', // 'all' | 'full' | 'domain' | 'mistakes' | 'history'
+    examMode: localStorage.getItem(STORAGE_KEYS.EXAM_MODE) || 'tutor',
+    examFilter: 'all',
     completedTasks: loadJson(STORAGE_KEYS.TASKS, {}),
     examHistory: loadJson(STORAGE_KEYS.HISTORY, []),
-    mistakesMap: loadJson(STORAGE_KEYS.MISTAKES, {}), // { [questionId]: questionObj }
+    mistakesMap: loadJson(STORAGE_KEYS.MISTAKES, {}),
     allExams: [],
-    activeSession: null // Estado do simulado em andamento
+    activeSession: null
   };
 
-  // Utilitários de Armazenamento Seguro
   function loadJson(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -74,6 +58,12 @@
       .replace(/'/g, '&#39;');
   }
 
+  function toArray(val) {
+    if (Array.isArray(val)) return val;
+    if (val === null || val === undefined || val === '') return [];
+    return [val];
+  }
+
   function showToast(message) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -88,27 +78,28 @@
     }, 3200);
   }
 
-  // Normaliza identificador de domínio (ex: 1, "1", "D1" -> "D1")
   function normalizeDomainCode(domainId) {
     if (!domainId) return 'D1';
     const str = String(domainId).trim().toUpperCase();
-    if (str.startsWith('D')) return str;
-    const num = parseInt(str, 10);
-    if (!isNaN(num) && num >= 1 && num <= 5) return 'D' + num;
+    if (str === 'D1' || str === '1' || str === 'I') return 'D1';
+    if (str === 'D2' || str === '2' || str === 'II') return 'D2';
+    if (str === 'D3' || str === '3' || str === 'III') return 'D3';
+    if (str === 'D4' || str === '4' || str === 'IV') return 'D4';
+    if (str === 'D5' || str === '5' || str === 'V') return 'D5';
     return 'EXTRA';
   }
 
   const DOMAIN_LABELS = {
-    D1: { name: 'Domínio I: IA Responsável e Confiável', weight: 15, badgeClass: 'badge-brand' },
-    D2: { name: 'Domínio II: Necessidades e Soluções de Negócio', weight: 26, badgeClass: 'badge-info' },
-    D3: { name: 'Domínio III: Necessidades de Dados', weight: 26, badgeClass: 'badge-success' },
-    D4: { name: 'Domínio IV: Desenvolvimento e Avaliação de Modelos', weight: 16, badgeClass: 'badge-warning' },
-    D5: { name: 'Domínio V: Operacionalizar a Solução de IA', weight: 17, badgeClass: 'badge-danger' },
-    EXTRA: { name: 'Metodologia CPMAI v7 & 7 Padrões de IA', weight: 100, badgeClass: 'badge-brand' }
+    D1: { name: 'Domínio I: IA Responsável e Confiável', weight: 15, examId: 'dominio-1' },
+    D2: { name: 'Domínio II: Necessidades e Soluções de Negócio', weight: 26, examId: 'dominio-2' },
+    D3: { name: 'Domínio III: Necessidades de Dados', weight: 26, examId: 'dominio-3' },
+    D4: { name: 'Domínio IV: Desenvolvimento e Avaliação de Modelos', weight: 16, examId: 'dominio-4' },
+    D5: { name: 'Domínio V: Operacionalizar a Solução de IA', weight: 17, examId: 'dominio-5' },
+    EXTRA: { name: 'Metodologia CPMAI v7 & 7 Padrões de IA', weight: 100, examId: 'dominio-extra-cpmai' }
   };
 
   // ==========================================================================
-  // 1. INICIALIZAÇÃO & CARREGAMENTO DOS BANCOS DE DADOS
+  // 1. INICIALIZAÇÃO DO CATÁLOGO DE SIMULADOS
   // ==========================================================================
   function buildAllExamsCatalog() {
     const full1 = Array.isArray(window.EXAMS_FULL_1) ? window.EXAMS_FULL_1 : [];
@@ -125,12 +116,12 @@
       }))
     }));
 
-    // Cria o Super Simulado Oficial de 120 Questões (160 minutos) combinando os 6 Simulados de Prova
     const all120Questions = fullExams.flatMap((ex) => ex.questions);
     const superExam = {
       id: 'super-simulado-120',
       title: '🏆 Super Simulado Oficial Completo (120 Questões — Padrão Pearson VUE)',
-      subtitle: 'Maratona completa nas condições exatas do exame PMI-CPMAI™: 120 questões situacionais distribuídas proporcionalmente entre os 5 Domínios do ECO para resolver em 160 minutos.',
+      subtitle:
+        'Maratona completa nas condições exatas do exame PMI-CPMAI™: 120 questões situacionais distribuídas proporcionalmente entre os 5 Domínios do ECO para resolver em 160 minutos.',
       durationMinutes: 160,
       passingScore: 75,
       type: 'full',
@@ -149,7 +140,6 @@
 
     state.allExams = [...fullExams, superExam, ...domainExams];
 
-    // Atualiza contadores no Hero e Menus
     const totalUniqueQuestions =
       all120Questions.length + domainExams.reduce((acc, ex) => acc + ex.questions.length, 0);
     const qCountEl = document.getElementById('stat-questions-count');
@@ -201,7 +191,6 @@
       }
     });
 
-    // Verifica hash inicial
     const hash = window.location.hash.replace('#', '');
     if (['overview', 'reference', 'schedule', 'simulados', 'tips'].includes(hash)) {
       switchView(hash, false);
@@ -211,13 +200,11 @@
   function switchView(viewName, scrollToTop = true) {
     state.currentView = viewName;
 
-    // Atualiza painéis
     document.querySelectorAll('[data-view-panel]').forEach((panel) => {
       const isMatch = panel.getAttribute('data-view-panel') === viewName;
       panel.classList.toggle('active', isMatch);
     });
 
-    // Atualiza botões da barra superior e inferior
     document.querySelectorAll('[data-nav-target]').forEach((btn) => {
       if (btn.classList.contains('nav-btn') || btn.classList.contains('bottom-nav-item')) {
         const isMatch = btn.getAttribute('data-nav-target') === viewName;
@@ -252,7 +239,7 @@
     if (!container || !examOverview) return;
 
     const fmt = examOverview.format || {};
-    const prereqs = examOverview.prerequisites || [];
+    const prereqs = toArray(examOverview.prerequisites);
 
     container.innerHTML = `
       <div class="callout callout-info mb-6">
@@ -358,8 +345,12 @@
 
       <div class="domains-grid">
         ${domains
-          .map((d) => {
-            const domainExamId = 'dominio-' + d.number;
+          .map((d, idx) => {
+            const dCode = normalizeDomainCode(d.id || d.number || idx + 1);
+            const domainExamId = (DOMAIN_LABELS[dCode] && DOMAIN_LABELS[dCode].examId) || `dominio-${idx + 1}`;
+            const phasesRelated = toArray(d.cpmaiPhasesRelated);
+            const scenarios = toArray(d.examScenarios);
+
             return `
             <article class="domain-card">
               <div class="domain-card-header">
@@ -372,34 +363,41 @@
               </div>
 
               <div class="domain-bar" aria-label="Peso do domínio na prova: ${d.weight}%">
-                <div class="domain-bar-fill" style="width: ${d.weight * 3.2}%;"></div>
+                <div class="domain-bar-fill" style="width: ${Math.min(100, d.weight * 3.2)}%;"></div>
               </div>
 
               <p style="font-size: 0.9rem;">${escapeHtml(d.summary)}</p>
 
               <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
-                ${(d.cpmaiPhasesRelated || [])
-                  .map((ph) => `<span class="badge badge-info">${escapeHtml(ph)}</span>`)
-                  .join('')}
+                ${phasesRelated.map((ph) => `<span class="badge badge-info">${escapeHtml(ph)}</span>`).join('')}
               </div>
 
               <div>
                 <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.4rem;">
-                  O que você será avaliado (Tarefas do ECO):
+                  O que será avaliado (Tarefas do ECO):
                 </h4>
                 <ul class="domain-tasks">
-                  ${(d.tasks || []).map((t) => `<li>${escapeHtml(t)}</li>`).join('')}
+                  ${toArray(d.tasks)
+                    .map((t) => `<li>${escapeHtml(t)}</li>`)
+                    .join('')}
                 </ul>
               </div>
 
               <div class="exam-tip-box" style="margin-top: auto;">
                 <strong>🎯 Cenários Típicos de Prova:</strong>
                 <ul class="domain-tasks" style="margin-top: 0.35rem;">
-                  ${(d.examScenarios || []).map((sc) => `<li>${escapeHtml(sc)}</li>`).join('')}
+                  ${scenarios
+                    .map((sc) => {
+                      if (typeof sc === 'object' && sc !== null) {
+                        return `<li><strong>Cenário:</strong> ${escapeHtml(sc.scenario)}<br/><em>Decisão CPMAI:</em> ${escapeHtml(sc.decision)}</li>`;
+                      }
+                      return `<li>${escapeHtml(sc)}</li>`;
+                    })
+                    .join('')}
                 </ul>
               </div>
 
-              <button type="button" class="btn btn-secondary btn-sm mt-2" data-start-exam="${domainExamId}">
+              <button type="button" class="btn btn-secondary btn-sm mt-2" data-start-exam="${escapeHtml(domainExamId)}">
                 📝 Resolver Simulado Dirigido do Domínio ${escapeHtml(d.number)}
               </button>
             </article>
@@ -427,7 +425,7 @@
         <h3 class="card-title mb-2">${escapeHtml(teamDiscussion.title)}</h3>
         <p class="mb-4">${escapeHtml(teamDiscussion.summary)}</p>
         <div class="grid-2">
-          ${(teamDiscussion.architectureConsensus || [])
+          ${toArray(teamDiscussion.architectureConsensus)
             .map(
               (item) => `
             <div class="glossary-card" style="flex-direction: row; align-items: flex-start; gap: 0.75rem;">
@@ -441,7 +439,7 @@
       </div>
 
       <div class="team-grid">
-        ${(teamDiscussion.members || [])
+        ${toArray(teamDiscussion.members)
           .map((m) => {
             const rKey = roleMap[m.id] || 'ai';
             return `
@@ -465,7 +463,9 @@
                   Decisões Implementadas neste Portal:
                 </h4>
                 <ul class="team-decisions">
-                  ${(m.keyDecisions || []).map((d) => `<li><span>${escapeHtml(d)}</span></li>`).join('')}
+                  ${toArray(m.keyDecisions)
+                    .map((d) => `<li><span>${escapeHtml(d)}</span></li>`)
+                    .join('')}
                 </ul>
               </div>
             </article>
@@ -536,11 +536,11 @@
 
   function renderRefPmbokAndPhases(container, ref) {
     const pmbok = ref.pmbokAnswer || {};
-    const phases = ref.cpmaiPhases || [];
+    const phases = toArray(ref.cpmaiPhases);
     const compTable = pmbok.comparisonTable || { headers: [], rows: [] };
+    const headers = toArray(compTable.headers);
 
     container.innerHTML = `
-      <!-- Resposta sobre o "PMBOK da IA" -->
       <div class="card mb-6">
         <span class="badge badge-brand mb-2">Dúvida Clássica Esclarecida</span>
         <h3 class="card-title mb-2">${escapeHtml(pmbok.question)}</h3>
@@ -555,18 +555,18 @@
 
         <h4 class="mb-4">Os 6 Documentos e Frameworks que Formam o "PMBOK da IA":</h4>
         <div class="patterns-grid">
-          ${(pmbok.corePillars || [])
+          ${toArray(pmbok.corePillars)
             .map(
-              (pillar) => `
+              (pillar, idx) => `
             <article class="guide-card">
               <div class="flex-between">
-                <span class="pattern-icon" aria-hidden="true">${escapeHtml(pillar.icon || '📄')}</span>
-                <span class="badge badge-brand">${escapeHtml(pillar.role)}</span>
+                <span class="pattern-icon" aria-hidden="true">${escapeHtml(pillar.icon || ['📘', '🧭', '🔄', '🛡️', '⚖️', '🏛️'][idx] || '📄')}</span>
+                <span class="badge badge-brand">${escapeHtml(pillar.badge || pillar.role || 'Pilar Oficial')}</span>
               </div>
-              <h4 class="card-title">${escapeHtml(pillar.name)}</h4>
+              <h4 class="card-title">${escapeHtml(pillar.title || pillar.name)}</h4>
               <p style="font-size: 0.875rem;">${escapeHtml(pillar.description)}</p>
               <div class="exam-tip-box" style="margin-top: auto;">
-                <strong>Como usar no estudo:</strong> ${escapeHtml(pillar.howToUse)}
+                <strong>Foco na Prova:</strong> ${escapeHtml(pillar.examFocus || pillar.howToUse || '')}
               </div>
             </article>
           `
@@ -574,24 +574,27 @@
             .join('')}
         </div>
 
-        <!-- Tabela Comparativa: Gestão Tradicional (PMBOK/PMP) vs Gestão de IA (CPMAI) -->
-        <h4 class="mt-6 mb-2">Comparativo Essencial de Prova: Projeto de Software Tradicional vs. Projeto de IA (CPMAI)</h4>
-        <div class="table-wrapper" tabindex="0" role="region" aria-label="Comparação entre Gestão Tradicional e Gestão de IA CPMAI" style="--label-1: 'Dimensão'; --label-2: 'Software Tradicional'; --label-3: 'Projeto de IA (CPMAI)'; --label-4: 'Impacto na Prova';">
+        <h4 class="mt-6 mb-2">Comparativo Essencial de Prova: Software Tradicional vs. Projetos de IA (CPMAI)</h4>
+        <div class="table-wrapper" tabindex="0" role="region" aria-label="Comparação entre Gestão Tradicional e Gestão de IA CPMAI" style="--label-1: 'Dimensão'; --label-2: 'Software Tradicional'; --label-3: 'Projeto de IA (CPMAI)';">
           <table>
             <thead>
               <tr>
-                ${(compTable.headers || []).map((h) => `<th scope="col">${escapeHtml(h)}</th>`).join('')}
+                ${headers.map((h) => `<th scope="col">${escapeHtml(h)}</th>`).join('')}
               </tr>
             </thead>
             <tbody>
-              ${(compTable.rows || [])
+              ${toArray(compTable.rows)
                 .map(
                   (row) => `
                 <tr>
                   <th scope="row">${escapeHtml(row[0])}</th>
-                  <td data-label="Software Tradicional">${escapeHtml(row[1])}</td>
-                  <td data-label="Projeto de IA (CPMAI)"><strong>${escapeHtml(row[2])}</strong></td>
-                  <td data-label="Impacto na Prova">${escapeHtml(row[3])}</td>
+                  ${row
+                    .slice(1)
+                    .map(
+                      (cell, cIdx) =>
+                        `<td data-label="${escapeHtml(headers[cIdx + 1] || 'Detalhe')}">${cIdx === row.length - 2 ? `<strong>${escapeHtml(cell)}</strong>` : escapeHtml(cell)}</td>`
+                    )
+                    .join('')}
                 </tr>
               `
                 )
@@ -601,22 +604,20 @@
         </div>
       </div>
 
-      <!-- As 6 Fases da Metodologia CPMAI v7 -->
       <div class="card">
         <span class="badge badge-info mb-2">Coração da Prova • Metodologia Iterativa</span>
-        <h3 class="card-title mb-2">As 6 Fases da Metodologia CPMAI™ v7 (Clique para Explorar ou Ver Todas)</h3>
+        <h3 class="card-title mb-2">As 6 Fases da Metodologia CPMAI™ v7</h3>
         <p class="mb-4">
           Diferente do modelo cascata (Waterfall), o ciclo CPMAI é <strong>100% iterativo e centrado em dados</strong>. Ao final de cada fase existe um portão de decisão (<strong>Go / No-Go Gate</strong>): se os dados forem insuficientes ou o modelo não atingir o KPI de negócio, você <strong>deve retroceder para uma fase anterior</strong>!
         </p>
 
-        <!-- Barra de Fluxo Interativo das 6 Fases -->
-        <div class="cpmai-flow" role=" region" aria-label="Fluxo das 6 Fases do CPMAI">
+        <div class="cpmai-flow" role="region" aria-label="Fluxo das 6 Fases do CPMAI">
           ${phases
             .map(
               (p) => `
             <a href="#phase-card-${p.phaseNumber}" class="phase-node">
               <span class="phase-number">Fase ${escapeHtml(p.roman)}</span>
-              <strong>${escapeHtml(p.name.replace(/^Fase [IVX]+:\s*/i, ''))}</strong>
+              <strong>${escapeHtml(String(p.name || '').replace(/^Fase [IVX]+:\s*/i, ''))}</strong>
               <span class="stat-sub">${escapeHtml(p.englishName)}</span>
             </a>
           `
@@ -624,7 +625,6 @@
             .join('')}
         </div>
 
-        <!-- Detalhamento Completo das 6 Fases -->
         <div class="cpmai-phases-grid">
           ${phases
             .map(
@@ -643,20 +643,28 @@
               <div>
                 <strong style="font-size: 0.825rem; color: var(--brand-primary-hover);">❓ Perguntas-Chave da Fase:</strong>
                 <ul class="domain-tasks">
-                  ${(p.keyQuestions || []).map((q) => `<li>${escapeHtml(q)}</li>`).join('')}
+                  ${toArray(p.keyQuestions)
+                    .map((q) => `<li>${escapeHtml(q)}</li>`)
+                    .join('')}
                 </ul>
               </div>
 
               <div>
                 <strong style="font-size: 0.825rem; color: var(--success-text);">📦 Entregáveis Principais:</strong>
                 <ul class="domain-tasks">
-                  ${(p.deliverables || []).map((d) => `<li>${escapeHtml(d)}</li>`).join('')}
+                  ${toArray(p.deliverables)
+                    .map((d) => `<li>${escapeHtml(d)}</li>`)
+                    .join('')}
                 </ul>
               </div>
 
               <div class="go-nogo-box">
                 <strong>🚦 Portão Go / No-Go (Critério de Decisão):</strong>
-                <p style="font-size: 0.825rem; margin-bottom: 0.4rem;">${escapeHtml(p.goNoGoCriteria)}</p>
+                <ul class="domain-tasks" style="margin-bottom: 0.45rem;">
+                  ${toArray(p.goNoGoCriteria)
+                    .map((g) => `<li>${escapeHtml(g)}</li>`)
+                    .join('')}
+                </ul>
                 <strong>↩️ Quando Iterar (Voltar de Fase):</strong>
                 <p style="font-size: 0.825rem;">${escapeHtml(p.whenToIterateBack)}</p>
               </div>
@@ -670,7 +678,7 @@
   }
 
   function renderRefSevenPatterns(container, ref) {
-    const patterns = ref.sevenPatterns || [];
+    const patterns = toArray(ref.sevenPatterns);
 
     container.innerHTML = `
       <div class="callout callout-info mb-6">
@@ -678,7 +686,7 @@
         <div>
           <strong>Por que os 7 Padrões de IA são tão cobrados na prova PMI-CPMAI™?</strong>
           <p style="margin-top: 0.25rem;">
-            Na metodologia CPMAI, você nunca começa escolhendo um algoritmo ("vamos usar Random Forest"). Você identifica qual(is) dos <strong>7 Padrões de IA</strong> resolvem o problema de negócio na Fase I! Projetos complexos (como um carro autônomo ou atendimento bancário inteligente) combinam múltiplos padrões mas devem ser implementados <strong>um padrão por iteração</strong>.
+            Na metodologia CPMAI, você nunca começa escolhendo um algoritmo ("vamos usar Random Forest"). Você identifica qual(is) dos <strong>7 Padrões de IA</strong> resolvem o problema de negócio na Fase I! Projetos complexos combinam múltiplos padrões, mas devem ser implementados <strong>um padrão por iteração</strong>.
           </p>
         </div>
       </div>
@@ -706,14 +714,16 @@
             <div>
               <strong style="font-size: 0.825rem; color: var(--success-text);">💼 Casos de Uso Clássicos na Prova:</strong>
               <ul class="domain-tasks">
-                ${(pt.classicUseCases || []).map((u) => `<li>${escapeHtml(u)}</li>`).join('')}
+                ${toArray(pt.classicUseCases)
+                  .map((u) => `<li>${escapeHtml(u)}</li>`)
+                  .join('')}
               </ul>
             </div>
 
             <div>
               <strong style="font-size: 0.825rem; color: var(--info-text);">📊 Métricas &amp; Algoritmos Típicos:</strong>
               <p style="font-size: 0.825rem; margin-top: 0.2rem;">
-                <em>Métricas:</em> ${(pt.typicalMetrics || []).map(escapeHtml).join(' • ')}
+                <em>Métricas:</em> ${toArray(pt.typicalMetrics).map(escapeHtml).join(' • ')}
               </p>
             </div>
 
@@ -730,7 +740,7 @@
   }
 
   function renderRefTechnicalGuide(container, ref) {
-    const guides = ref.technicalGuide || [];
+    const guides = toArray(ref.technicalGuide);
 
     container.innerHTML = `
       <div class="callout callout-success mb-6">
@@ -755,14 +765,16 @@
             <p class="mb-4">${escapeHtml(g.summary)}</p>
 
             <div class="grid-2">
-              ${(g.content || [])
+              ${toArray(g.content)
                 .map(
                   (sec) => `
                 <div class="glossary-card" style="padding: 1.25rem;">
                   <h4 style="color: var(--brand-primary-hover); margin-bottom: 0.35rem;">${escapeHtml(sec.subtitle)}</h4>
                   <p style="font-size: 0.875rem; margin-bottom: 0.65rem;">${escapeHtml(sec.text)}</p>
                   <ul class="domain-tasks">
-                    ${(sec.bullets || []).map((b) => `<li>${escapeHtml(b)}</li>`).join('')}
+                    ${toArray(sec.bullets)
+                      .map((b) => `<li>${escapeHtml(b)}</li>`)
+                      .join('')}
                   </ul>
                 </div>
               `
@@ -778,7 +790,7 @@
   }
 
   function renderRefFlashcards(container, ref) {
-    const flashcards = ref.flashcards || [];
+    const flashcards = toArray(ref.flashcards);
     const categories = ['all', ...new Set(flashcards.map((f) => f.category))];
 
     const filtered =
@@ -846,7 +858,6 @@
       </div>
     `;
 
-    // Eventos de filtro e flip
     container.querySelectorAll('[data-fc-cat]').forEach((btn) => {
       btn.addEventListener('click', () => {
         state.flashcardCategory = btn.getAttribute('data-fc-cat');
@@ -883,12 +894,12 @@
   }
 
   function renderRefGlossary(container, ref) {
-    const glossary = ref.glossary || [];
+    const glossary = toArray(ref.glossary);
 
     container.innerHTML = `
       <div class="card mb-4">
         <h3 class="card-title mb-2">🔤 Glossário Oficial PMI-CPMAI™ (${glossary.length} Termos Essenciais)</h3>
-        <p class="stat-sub mb-4">Pesquise termos em português ou inglês (ex.: Drift, SHAP, RAG, SMOTE, Leakage, Gate, Loonshots, MLOps) e veja como caem na prova.</p>
+        <p class="stat-sub mb-4">Pesquise termos em português ou inglês (ex.: Drift, SHAP, RAG, SMOTE, Leakage, Gate, MLOps) e veja como caem na prova.</p>
         <div class="glossary-search-box">
           <input type="search" id="glossary-search-input" class="search-input" placeholder="🔍 Digite para filtrar termos, siglas ou conceitos..." value="${escapeHtml(state.glossaryQuery)}" aria-label="Buscar termo no glossário" />
         </div>
@@ -951,7 +962,7 @@
   }
 
   function renderRefWebResources(container, ref) {
-    const resources = ref.webResources || [];
+    const resources = toArray(ref.webResources);
 
     container.innerHTML = `
       <div class="callout callout-info mb-6">
@@ -993,7 +1004,7 @@
   // 6. VIEW 3: CRONOGRAMA DETALHADO SEMANA A SEMANA (8 SEMANAS)
   // ==========================================================================
   function initScheduleSection() {
-    const schedule = (window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule) || [];
+    const schedule = toArray(window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule);
     const filterContainer = document.getElementById('schedule-week-filters');
 
     if (filterContainer) {
@@ -1029,7 +1040,7 @@
             ? schedule
             : schedule.filter((w) => String(w.week) === String(state.selectedWeekFilter));
         targetWeeks.forEach((w) => {
-          (w.tasks || []).forEach((t) => {
+          toArray(w.tasks).forEach((t) => {
             state.completedTasks[t.id] = true;
           });
         });
@@ -1055,7 +1066,7 @@
   }
 
   function renderScheduleWeeks() {
-    const schedule = (window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule) || [];
+    const schedule = toArray(window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule);
     const container = document.getElementById('schedule-weeks-container');
     if (!container) return;
 
@@ -1068,7 +1079,7 @@
       <div class="weeks-grid">
         ${visibleWeeks
           .map((w) => {
-            const tasks = w.tasks || [];
+            const tasks = toArray(w.tasks);
             const doneCount = tasks.filter((t) => !!state.completedTasks[t.id]).length;
             const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
             const isAllDone = tasks.length > 0 && doneCount === tasks.length;
@@ -1076,7 +1087,7 @@
             return `
             <article class="week-card ${isAllDone ? 'week-completed' : ''}">
               <div class="week-header">
-                <div>
+                <div style="width: 100%;">
                   <div class="flex-between mb-2">
                     <span class="badge badge-brand">Semana ${w.week} de 8</span>
                     <span class="badge ${isAllDone ? 'badge-success' : 'badge-info'}">${doneCount}/${tasks.length} (${pct}%)</span>
@@ -1130,7 +1141,6 @@
       </div>
     `;
 
-    // Listener de checkboxes das tarefas
     container.querySelectorAll('[data-task-id]').forEach((cb) => {
       cb.addEventListener('change', (e) => {
         const taskId = e.target.getAttribute('data-task-id');
@@ -1149,8 +1159,8 @@
   }
 
   function updateScheduleProgressSummary() {
-    const schedule = (window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule) || [];
-    const allTasks = schedule.flatMap((w) => w.tasks || []);
+    const schedule = toArray(window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule);
+    const allTasks = schedule.flatMap((w) => toArray(w.tasks));
     const total = allTasks.length;
     const completed = allTasks.filter((t) => !!state.completedTasks[t.id]).length;
     const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -1168,7 +1178,6 @@
   // 7. VIEW 4: CENTRAL DE SIMULADOS & MOTOR INTERATIVO DE PROVA
   // ==========================================================================
   function initSimuladosSection() {
-    // Seletor de Modo (Tutor vs Prova Real)
     document.querySelectorAll('[data-exam-mode]').forEach((btn) => {
       const m = btn.getAttribute('data-exam-mode');
       const isSelected = m === state.examMode;
@@ -1191,7 +1200,6 @@
       });
     });
 
-    // Filtros de Categoria de Simulado
     const filterBar = document.getElementById('exam-category-filters');
     if (filterBar) {
       filterBar.addEventListener('click', (e) => {
@@ -1205,7 +1213,6 @@
       });
     }
 
-    // Delegação global para iniciar simulado a partir de qualquer botão [data-start-exam]
     document.addEventListener('click', (e) => {
       const startBtn = e.target.closest('[data-start-exam]');
       if (startBtn) {
@@ -1292,7 +1299,7 @@
         ? historyForExam.reduce((best, cur) => (cur.percentage > best.percentage ? cur : best), historyForExam[0])
         : null;
 
-    const qCount = (exam.questions || []).length;
+    const qCount = toArray(exam.questions).length;
     const isSuper = exam.id === 'super-simulado-120';
 
     return `
@@ -1384,7 +1391,7 @@
             <h4 class="mb-2">${idx + 1}. ${escapeHtml(q.question)}</h4>
             <div class="explanation-box is-correct">
               <strong>✓ Resposta Correta (${['A', 'B', 'C', 'D'][q.correct]}):</strong>
-              <p>${escapeHtml(q.options[q.correct])}</p>
+              <p>${escapeHtml(q.options && q.options[q.correct])}</p>
               <strong>Explicação Detalhada:</strong>
               <p>${escapeHtml(q.explanation)}</p>
               ${q.examTip ? `<div class="exam-tip-box"><strong>💡 Dica de Prova:</strong> ${escapeHtml(q.examTip)}</div>` : ''}
@@ -1447,7 +1454,6 @@
       return;
     }
 
-    // Agrega desempenho acumulado por domínio
     const aggDomains = {
       D1: { correct: 0, total: 0 },
       D2: { correct: 0, total: 0 },
@@ -1552,7 +1558,7 @@
       clearInterval(state.activeSession.timerId);
     }
 
-    const questions = (exam.questions || []).map((q) => ({
+    const questions = toArray(exam.questions).map((q) => ({
       ...q,
       domainCode: normalizeDomainCode(q.domainId || exam.domainId)
     }));
@@ -1562,12 +1568,12 @@
       mode: mode || 'tutor',
       questions,
       currentIndex: 0,
-      answers: {}, // { [idx]: chosenOptionIndex }
-      flagged: {}, // { [idx]: boolean }
+      answers: {},
+      flagged: {},
       remainingSeconds: (exam.durationMinutes || 30) * 60,
       totalSeconds: (exam.durationMinutes || 30) * 60,
       timerId: null,
-      reviewFilter: 'all' // 'all' | 'wrong' | 'flagged'
+      reviewFilter: 'all'
     };
 
     document.getElementById('simulados-catalog-view').classList.add('hidden');
@@ -1577,7 +1583,6 @@
 
     renderActiveExamQuestion();
 
-    // Inicia cronômetro regressivo
     state.activeSession.timerId = setInterval(() => {
       if (!state.activeSession) return;
       state.activeSession.remainingSeconds = Math.max(0, state.activeSession.remainingSeconds - 1);
@@ -1625,7 +1630,6 @@
 
     runnerView.innerHTML = `
       <div class="exam-runner">
-        <!-- Barra Superior do Simulado -->
         <div class="exam-topbar">
           <div>
             <span class="badge ${session.mode === 'tutor' ? 'badge-success' : 'badge-brand'}">
@@ -1646,7 +1650,6 @@
           </div>
         </div>
 
-        <!-- Mapa de Questões (Paleta de Navegação Rápida) -->
         <div class="question-map" role="navigation" aria-label="Mapa de questões do simulado">
           ${session.questions
             .map((_, idx) => {
@@ -1667,12 +1670,11 @@
             .join('')}
         </div>
 
-        <!-- Corpo da Questão Atual -->
         <div class="question-body">
           <div class="question-header">
             <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
               <span class="badge badge-brand">Questão ${qIndex + 1} de ${totalQ}</span>
-              <span class="badge badge-info">${escapeHtml(q.domainName || DOMAIN_LABELS[q.domainCode]?.name || '')}</span>
+              <span class="badge badge-info">${escapeHtml(q.domainName || (DOMAIN_LABELS[q.domainCode] && DOMAIN_LABELS[q.domainCode].name) || '')}</span>
               ${q.cpmaiPhase ? `<span class="badge">${escapeHtml(q.cpmaiPhase)}</span>` : ''}
               ${q.difficulty ? `<span class="badge">Nível: ${escapeHtml(q.difficulty)}</span>` : ''}
             </div>
@@ -1686,9 +1688,8 @@
             ${escapeHtml(q.question)}
           </div>
 
-          <!-- Alternativas A, B, C, D -->
           <div class="options-list" role="radiogroup" aria-label="Alternativas da questão ${qIndex + 1}">
-            ${(q.options || [])
+            ${toArray(q.options)
               .map((optText, optIdx) => {
                 const letter = ['A', 'B', 'C', 'D'][optIdx] || String(optIdx + 1);
                 let optClass = 'option-btn';
@@ -1709,7 +1710,6 @@
               .join('')}
           </div>
 
-          <!-- Caixa de Explicação Pedagógica (Visível imediatamente no Modo Estudo após responder) -->
           ${
             showFeedbackImmediately
               ? `
@@ -1735,7 +1735,6 @@
           }
         </div>
 
-        <!-- Rodapé de Navegação da Questão -->
         <div class="exam-footer">
           <button type="button" id="btn-prev-q" class="btn btn-secondary" ${qIndex === 0 ? 'disabled' : ''}>
             ← Anterior
@@ -1758,7 +1757,6 @@
       </div>
     `;
 
-    // Eventos da questão ativa
     runnerView.querySelectorAll('[data-jump-q]').forEach((btn) => {
       btn.addEventListener('click', () => {
         session.currentIndex = parseInt(btn.getAttribute('data-jump-q'), 10);
@@ -1771,7 +1769,6 @@
         const chosen = parseInt(btn.getAttribute('data-select-opt'), 10);
         session.answers[qIndex] = chosen;
 
-        // Se errou, registra imediatamente no Caderno de Erros
         if (chosen !== q.correct) {
           state.mistakesMap[q.id] = q;
           saveJson(STORAGE_KEYS.MISTAKES, state.mistakesMap);
@@ -1855,7 +1852,6 @@
         correctCount++;
         domainStats[dCode].correct++;
       } else {
-        // Registra no Caderno de Erros
         state.mistakesMap[q.id] = q;
       }
     });
@@ -1873,7 +1869,13 @@
       total,
       percentage,
       timeSpentFormatted: formatTime(timeSpentSec),
-      date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
       domainStats
     };
 
@@ -1939,7 +1941,6 @@
           </div>
         </div>
 
-        <!-- Desempenho por Domínio neste Simulado -->
         <div>
           <h3 class="card-title mb-4">📊 Desempenho por Domínio do Conhecimento (ECO)</h3>
           <div class="domain-breakdown">
@@ -1966,7 +1967,6 @@
           </div>
         </div>
 
-        <!-- Revisão Completa Questão por Questão -->
         <div>
           <div class="flex-between mb-4">
             <h3 class="card-title">📝 Gabarito Comentado Questão por Questão (${filteredQuestions.length})</h3>
@@ -2000,7 +2000,7 @@
                   </div>
                   <h4 class="mb-4">${escapeHtml(q.question)}</h4>
                   <div class="options-list mb-4">
-                    ${(q.options || [])
+                    ${toArray(q.options)
                       .map((opt, oIdx) => {
                         let cls = 'option-btn';
                         if (oIdx === q.correct) cls += ' correct';
@@ -2099,10 +2099,9 @@
         </div>
       </div>
 
-      <!-- As 15 Regras de Ouro do Mindset PMI-CPMAI -->
       <h3 class="section-title mb-4">🏆 As 15 Regras de Ouro do "Mindset PMI-CPMAI™"</h3>
       <div class="tips-grid mb-6">
-        ${(tips.goldenRules || [])
+        ${toArray(tips.goldenRules)
           .map(
             (r) => `
           <article class="mindset-card">
@@ -2131,12 +2130,11 @@
           .join('')}
       </div>
 
-      <!-- Armadilhas Clássicas de Prova -->
       <div class="card mb-6">
         <span class="badge badge-danger mb-2">Atenção Redobrada aos Distratores</span>
-        <h3 class="card-title mb-4">⚠️ As 5 Armadilhas Clássicas queMais Reprovam Candidatos</h3>
+        <h3 class="card-title mb-4">⚠️ As 5 Armadilhas Clássicas que Mais Reprovam Candidatos</h3>
         <div class="grid-2">
-          ${(tips.classicTraps || [])
+          ${toArray(tips.classicTraps)
             .map(
               (tr) => `
             <div class="glossary-card dont-card">
@@ -2153,7 +2151,6 @@
         </div>
       </div>
 
-      <!-- Estratégia de Gestão dos 160 Minutos -->
       <div class="card">
         <span class="badge badge-info mb-2">Controle de Tempo Pearson VUE</span>
         <h3 class="card-title mb-2">⏱️ Estratégia de Gestão dos 160 Minutos para 120 Questões</h3>
@@ -2162,13 +2159,22 @@
           <div>
             <h4 class="mb-2">Checkpoints de Relógio na Prova:</h4>
             <ul class="domain-tasks">
-              ${(tm.checkpoints || []).map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
+              ${toArray(tm.checkpoints)
+                .map((c) => {
+                  if (typeof c === 'object' && c !== null) {
+                    return `<li><strong>${escapeHtml(c.questionMilestone)} (${escapeHtml(c.elapsedMinutes)} / ${escapeHtml(c.remainingTimer)}):</strong> ${escapeHtml(c.action)}</li>`;
+                  }
+                  return `<li>${escapeHtml(c)}</li>`;
+                })
+                .join('')}
             </ul>
           </div>
           <div>
             <h4 class="mb-2">Checklist de Véspera e Dia do Exame (Pearson VUE):</h4>
             <ul class="domain-tasks">
-              ${(tm.pearsonVueChecklist || []).map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
+              ${toArray(tm.pearsonVueChecklist)
+                .map((c) => `<li>${escapeHtml(c)}</li>`)
+                .join('')}
             </ul>
           </div>
         </div>
@@ -2182,6 +2188,23 @@
     const terminalMethod = gh.methodTerminal || {};
     const mobileInstall = gh.mobileInstall || {};
 
+    const renderMobileDeviceCard = (devObj, fallbackTitle) => {
+      if (!devObj) return '';
+      if (typeof devObj === 'string') {
+        return `<div class="glossary-card"><strong>${escapeHtml(fallbackTitle)}</strong><p style="font-size: 0.85rem;">${escapeHtml(devObj)}</p></div>`;
+      }
+      return `
+        <div class="glossary-card">
+          <strong>${escapeHtml(devObj.icon || '📱')} ${escapeHtml(devObj.device || fallbackTitle)}</strong>
+          <ul class="domain-tasks" style="margin-top: 0.35rem;">
+            ${toArray(devObj.steps)
+              .map((s) => `<li>${escapeHtml(s)}</li>`)
+              .join('')}
+          </ul>
+        </div>
+      `;
+    };
+
     container.innerHTML = `
       <div class="callout callout-success mb-6">
         <span class="callout-icon" aria-hidden="true">🐙</span>
@@ -2192,20 +2215,19 @@
       </div>
 
       <div class="grid-2 mb-6">
-        <!-- Método 1: Pelo Navegador Web -->
         <div class="card">
           <span class="badge badge-success mb-2">Opção 1 • Mais Fácil (Sem Terminal)</span>
           <h3 class="card-title mb-2">${escapeHtml(browserMethod.title)}</h3>
           <p class="stat-sub mb-4">Tempo estimado: ${escapeHtml(browserMethod.estimatedTime)}</p>
           <div class="steps-list">
-            ${(browserMethod.steps || [])
+            ${toArray(browserMethod.steps)
               .map(
                 (st) => `
               <div class="step-card" style="padding: 1rem;">
                 <span class="step-number">${st.step}</span>
                 <div>
                   <h4>${escapeHtml(st.title)}</h4>
-                  <p style="font-size: 0.85rem; margin-top: 0.2rem;">${escapeHtml(st.detail)}</p>
+                  <p style="font-size: 0.85rem; margin-top: 0.2rem;">${escapeHtml(st.description || st.detail || '')}</p>
                 </div>
               </div>
             `
@@ -2214,7 +2236,6 @@
           </div>
         </div>
 
-        <!-- Método 2: Pelo Terminal Git -->
         <div class="card">
           <span class="badge badge-brand mb-2">Opção 2 • Via Linha de Comando (Git CLI)</span>
           <h3 class="card-title mb-2">${escapeHtml(terminalMethod.title)}</h3>
@@ -2234,17 +2255,10 @@
             </div>
           </div>
 
-          <!-- Como Instalar como App no Celular (PWA) -->
           <h3 class="card-title mt-6 mb-2">${escapeHtml(mobileInstall.title || '📱 Como Instalar como App no Celular')}</h3>
           <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div class="glossary-card">
-              <strong>🍎 No iPhone / iPad (Safari):</strong>
-              <p style="font-size: 0.85rem;">${escapeHtml(mobileInstall.ios || '')}</p>
-            </div>
-            <div class="glossary-card">
-              <strong>🤖 No Android (Chrome):</strong>
-              <p style="font-size: 0.85rem;">${escapeHtml(mobileInstall.android || '')}</p>
-            </div>
+            ${renderMobileDeviceCard(mobileInstall.ios, '🍎 No iPhone / iPad (Safari)')}
+            ${renderMobileDeviceCard(mobileInstall.android, '🤖 No Android (Chrome)')}
           </div>
         </div>
       </div>
@@ -2255,7 +2269,9 @@
       copyBtn.addEventListener('click', () => {
         const text = terminalMethod.commandsBlock || '';
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(() => showToast('✓ Comandos Git copiados para a área de transferência!'));
+          navigator.clipboard
+            .writeText(text)
+            .then(() => showToast('✓ Comandos Git copiados para a área de transferência!'));
         }
       });
     }
@@ -2265,8 +2281,8 @@
   // 11. PROGRESSO GLOBAL & BACKUP / SINCRONIZAÇÃO JSON (<dialog>)
   // ==========================================================================
   function updateGlobalProgressUI() {
-    const schedule = (window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule) || [];
-    const allTasks = schedule.flatMap((w) => w.tasks || []);
+    const schedule = toArray(window.STUDY_CONTENT && window.STUDY_CONTENT.studySchedule);
+    const allTasks = schedule.flatMap((w) => toArray(w.tasks));
     const totalTasks = allTasks.length || 1;
     const doneTasks = allTasks.filter((t) => !!state.completedTasks[t.id]).length;
     const taskPct = Math.round((doneTasks / totalTasks) * 100);
@@ -2279,7 +2295,6 @@
     if (fillEl) fillEl.style.width = `${taskPct}%`;
     if (topLineEl) topLineEl.style.width = `${taskPct}%`;
 
-    // Atualiza estatísticas do usuário no Hero
     const scoreEl = document.getElementById('stat-user-score');
     const doneEl = document.getElementById('stat-exams-done');
     if (state.examHistory.length > 0) {
@@ -2392,25 +2407,34 @@
     }
   }
 
-  // Registra Service Worker para suporte PWA no GitHub Pages
   function registerServiceWorker() {
-    if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+    if (
+      'serviceWorker' in navigator &&
+      (window.location.protocol === 'https:' || window.location.hostname === 'localhost')
+    ) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
   }
 
-  // Boot da aplicação
+  function safeRun(fn, label) {
+    try {
+      fn();
+    } catch (err) {
+      console.error('Erro ao inicializar ' + label + ':', err);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    buildAllExamsCatalog();
-    initNavigation();
-    renderOverviewSection();
-    initReferenceSection();
-    initScheduleSection();
-    initSimuladosSection();
-    initTipsAndGithubSection();
-    initSyncDialog();
-    updateGlobalProgressUI();
-    registerServiceWorker();
+    safeRun(initTheme, 'Theme');
+    safeRun(buildAllExamsCatalog, 'ExamsCatalog');
+    safeRun(initNavigation, 'Navigation');
+    safeRun(renderOverviewSection, 'OverviewSection');
+    safeRun(initReferenceSection, 'ReferenceSection');
+    safeRun(initScheduleSection, 'ScheduleSection');
+    safeRun(initSimuladosSection, 'SimuladosSection');
+    safeRun(initTipsAndGithubSection, 'TipsAndGithubSection');
+    safeRun(initSyncDialog, 'SyncDialog');
+    safeRun(updateGlobalProgressUI, 'GlobalProgressUI');
+    safeRun(registerServiceWorker, 'ServiceWorker');
   });
 })();
